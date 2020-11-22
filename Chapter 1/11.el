@@ -19,6 +19,15 @@
 ;;
 ;;; Code:
 
+;; Exercise 1.2
+;; / performs floating-point division only if at least one of its arguments is a float
+(/ (+ 5
+      4
+      (- 2 (- 3 (+ 6 (/ 4 5)))))
+   (* 3.0 ; cast to float
+      (- 6 2)
+      (- 2 7)))
+
 ;; Exercise 1.3
 (defun square (x) (* x x))
 
@@ -32,6 +41,32 @@
    ((and (>= x y) (>= z y)) (sum-of-squares x z))))
 
 (sum-squares-largest 1 2 3)
+
+;; Exercise 1.4
+(defun a-plus-abs-b (a b)
+  "In Scheme you would write ((if (> b 0) + -) a b)
+but we need to use funcall in elisp."
+  (funcall (if (> b 0) #'+ #'-) a b))
+
+(a-plus-abs-b 1  2) ; 3
+(a-plus-abs-b 1 -2) ; 3
+
+;; Exercise 1.5
+(defun (p) (p))
+(defun test (x y)
+  (if (= x 0) 0 y))
+
+;; Using applicative-order evaluation
+;; (evaluate operator and operands and apply the
+;; resulting procedure to the resulting arguments)
+(test 0 (p))
+(test 0 (p))
+(test 0 (p)) ; gets stuck trying to expand p
+
+;; Using normal-order evaluation
+;; (evaluates procedure then arguments)
+(test 0 (p))
+(if (= 0 0) 0 (p)) ; 0
 
 (provide '11)
 ;;; 11.el ends here
