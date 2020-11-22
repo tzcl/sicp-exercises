@@ -66,7 +66,8 @@ but we need to use funcall in elisp."
 ;; Using normal-order evaluation
 ;; (evaluates procedure then arguments)
 (test 0 (p))
-(if (= 0 0) 0 (p)) ; 0
+(if (= 0 0) 0 (p))
+(if t 0 (p)) ; 0
 
 (provide '11)
 ;;; 11.el ends here
