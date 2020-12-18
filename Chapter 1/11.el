@@ -52,7 +52,7 @@ but we need to use funcall in elisp."
 (a-plus-abs-b 1 -2) ; 3
 
 ;; Exercise 1.5
-(defun (p) (p))
+(defun p (p))
 (defun test (x y)
   (if (= x 0) 0 y))
 
@@ -68,6 +68,38 @@ but we need to use funcall in elisp."
 (test 0 (p))
 (if (= 0 0) 0 (p))
 (if t 0 (p)) ; 0
+
+;; Exercise 1.6
+;; Why do we need a special form for if?
+(defun new-if (predicate then-clause else-clause)
+  (cond ((predicate) then-clause)
+        (t else-clause)))
+
+;; This works fine
+(new-if (= 2 3) 0 5)
+(new-if (= 1 1) 0 5)
+
+;; But when we use new-if here, it doesn't stop iterating
+;; The if form is special because the interpreter only evaluates one of its
+;; branches (whereas with a cond both get evaluated)
+(defun sqrt-iter (guess x)
+  (if (good-enough? guess x)
+      guess
+    (sqrt-iter (improve guess x) x)))
+
+(defun improve (guess x)
+  (average guess (/ x guess)))
+
+(defun average (x y)
+  (/ (+ x y) 2))
+
+(defun good-enough? (guess x)
+  (< (abs (- (square guess) x)) 0.001))
+
+(defun sqrt (x)
+  (sqrt-iter 1.0 x))
+
+(sqrt 9)
 
 (provide '11)
 ;;; 11.el ends here
