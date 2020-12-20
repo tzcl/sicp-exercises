@@ -100,6 +100,7 @@ but we need to use funcall in elisp."
   (sqrt-iter 1.0 x))
 
 (sqrt 9)
+(print (sqrt 16))
 
 (provide '11)
 ;;; 11.el ends here
