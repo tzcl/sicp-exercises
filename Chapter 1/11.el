@@ -103,6 +103,8 @@ but we need to use funcall in elisp."
 (print (sqrt 16))
 
 ;; Exercise 1.7
+;; Implementing a better test for good-enough?
+
 
 (provide '11)
 ;;; 11.el ends here
