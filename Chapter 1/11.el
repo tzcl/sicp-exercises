@@ -102,5 +102,7 @@ but we need to use funcall in elisp."
 (sqrt 9)
 (print (sqrt 16))
 
+;; Exercise 1.7
+
 (provide '11)
 ;;; 11.el ends here
