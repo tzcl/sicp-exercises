@@ -40,7 +40,7 @@
    ((and (>= y x) (>= z x)) (sum-of-squares y z))
    ((and (>= x y) (>= z y)) (sum-of-squares x z))))
 
-(sum-squares-largest 1 2 3)
+(sum-squares-largest 1 2 3)             ; 13
 
 ;; Exercise 1.4
 (defun a-plus-abs-b (a b)
@@ -100,11 +100,50 @@ but we need to use funcall in elisp."
   (sqrt-iter 1.0 x))
 
 (sqrt 9)
-(print (sqrt 16))
+(sqrt 16)
 
 ;; Exercise 1.7
-;; Implementing a better test for good-enough?
+;; Implement a better test for good-enough
+;; The idea is to compare across iterations and also compare against a
+;; percentage of the original number to prevent underflow
+(defun good-enough? (prev guess)
+  "Compare iterations rather than PREV vs GUESS."
+  (< (abs (- prev guess)) 0.001))
 
+(defun sqrt-iter (prev guess x)
+  (if (good-enough? prev guess)
+      guess
+    (sqrt-iter guess (improve guess x) x)))
+
+(defun sqrt (x)
+  (sqrt-iter 0.0 1.0 x))
+
+(sqrt 9)
+(sqrt 16)
+
+;; Exercise 1.8
+;; Newton's method for cube roots (we generalise later)
+(defun cbrt-iter (prev guess x)
+  (if (good-enough? prev guess)
+      guess
+    (cbrt-iter guess (improve guess x) x)))
+
+(defun improve (guess x)
+  (/
+   (+
+    (/ x (square guess))
+    (* 2 guess))
+   3))
+
+(defun good-enough? (prev guess)
+  (< (abs (- prev guess)) (abs (* 0.001 guess))))
+
+(defun cbrt (x)
+  (cbrt-iter 0.0 1.0 x))
+
+(cbrt 5)
+(cbrt 100)
+(cbrt -3)
 
 (provide '11)
 ;;; 11.el ends here
