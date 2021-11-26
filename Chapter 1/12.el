@@ -68,5 +68,17 @@
 (f 3)
 (f 4)
 
+;; Exercise 1.12
+(defun pascal (n m)
+  "The Mth element of the Nth row of Pascal's triangle."
+  (cond ((= n 0) 1)
+        ((or (= m 0) (= m n)) 1)
+        (t (+ (pascal (1- n) (1- m)) (pascal (1- n) m)))))
+
+(pascal 0 0)
+(pascal 1 1)
+(pascal 2 2)
+(pascal 4 2)
+
 (provide '12)
 ;;; 12.el ends here
