@@ -45,6 +45,28 @@
 ;; (A 1 (A 2 3))
 ;; From above, we have 2^(2^(2^2)) = 2^16 = 65536
 
+;; Exercise 1.11
+(defun recur-f (n)
+  (if (< n 3)
+      n
+    (+ (recur-f (- n 1)) (* 2 (recur-f (- n 2))) (* 3 (recur-f (- n 3))))))
+
+(recur-f 2)
+(recur-f 3)
+(recur-f 4)
+
+(defun f (n)
+  (if (< n 3)
+      n
+    (iter-f 2 1 0 n)))
+(defun iter-f (a b c n)
+  (if (< n 3)
+      a
+    (iter-f (+ a (* 2 b) (* 3 c)) a b (- n 1))))
+
+(f 2)
+(f 3)
+(f 4)
 
 (provide '12)
 ;;; 12.el ends here
