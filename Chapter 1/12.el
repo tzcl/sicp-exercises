@@ -80,5 +80,32 @@
 (pascal 2 2)
 (pascal 4 2)
 
+;; Exercise 1.16
+;; Helper functions
+(defun even? (n)
+  (= (mod n 2) 0))
+(defun square (n)
+  (* n n))
+
+;; This exp is logarithmic (exponent decreases by a factor of 2)
+(defun fast-exp (b n)
+  (cond ((= n 0) 1)
+        ((even? n) (square (fast-exp b (/ n 2))))
+        (t (* b (fast-exp b (1- n))))))
+
+;; Design an iterative version of fast-exp
+;; Idea: use a as a state variable / accumulator
+(defun iter-exp (b n)
+  (defun iter (a b n)
+    (cond ((= n 0) a)
+          ((even? n) (iter a (square b) (/ n 2)))
+          (t (iter (* a b) b (1- n)))))
+  (iter 1 b n))
+
+(iter-exp 2 3)
+(iter-exp 2 4)
+(iter-exp 2 8)
+(iter-exp 2 9)
+
 (provide '12)
 ;;; 12.el ends here
