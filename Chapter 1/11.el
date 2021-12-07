@@ -52,27 +52,27 @@ but we need to use funcall in elisp."
 (a-plus-abs-b 1 -2) ; 3
 
 ;; Exercise 1.5
-(defun p (p))
-(defun test (x y)
-  (if (= x 0) 0 y))
+;;   (defun p (p))
+;;   (defun test (x y)
+;;     (if (= x 0) 0 y))
 
 ;; Using applicative-order evaluation
 ;; (evaluate operator and operands and apply the
 ;; resulting procedure to the resulting arguments)
-(test 0 (p))
-(test 0 (p))
-(test 0 (p)) ; gets stuck trying to expand p
+;;   (test 0 (p))
+;;   (test 0 (p))
+;;   (test 0 (p)) ; gets stuck trying to expand p
 
 ;; Using normal-order evaluation
 ;; (evaluates procedure then arguments)
-(test 0 (p))
-(if (= 0 0) 0 (p))
-(if t 0 (p)) ; 0
+;;   (test 0 (p)))
+;;   (if (= 0 0) 0 (p))
+;;   (if t 0 (p)) ; 0
 
 ;; Exercise 1.6
 ;; Why do we need a special form for if?
 (defun new-if (predicate then-clause else-clause)
-  (cond ((predicate) then-clause)
+  (cond (predicate then-clause)
         (t else-clause)))
 
 ;; This works fine

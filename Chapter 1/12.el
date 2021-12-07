@@ -107,5 +107,100 @@
 (iter-exp 2 8)
 (iter-exp 2 9)
 
+;; Exercise 1.17
+(defun fast-mul (a b)
+  "Multiply A * B with log(B) number of operations."
+  (cond ((= b 1) a)
+        ((even? b) (* 2 (fast-mul a (/ b 2))))
+        (t (+ a (fast-mul a (1- b))))))
+
+(fast-mul 2 3)
+(fast-mul 5 13)
+
+;; Exercise 1.18
+(defun iter-mul (a b)
+  (defun iter (x a b)
+    (cond ((= b 1) x)
+          ((even? b) (iter (+ x a) (* 2 a) (/ b 2)))
+          (t (iter (+ x a) a (1- b)))))
+  (iter a a b))
+
+(iter-mul 2 2)
+(iter-mul 2 3)
+(iter-mul 2 4)
+(iter-mul 2 5)
+(iter-mul 5 13)
+
+;; Exercise 1.19
+(defun log-fib (n)
+  (defun p* (p q) (+ (square p) (square q)))
+  (defun q* (p q) (+ (square q) (* 2 p q)))
+  (defun iter (a b p q count)
+    (cond ((= count 0) b)
+          ((even? count)
+           (iter a b (p* p q) (q* p q) (/ count 2)))
+          (t (iter (+ (* b q) (* a q) (* a p))
+                   (+ (* b p) (* a q))
+                   p q (1- count)))))
+  (iter 1 0 0 1 n))
+
+(log-fib 0)
+(log-fib 1)
+(log-fib 2)
+(log-fib 3)
+(log-fib 4)
+(log-fib 5)
+
+;; Exercise 1.21
+(defun smallest-divisor (n)
+  (defun find-divisor (n test-divisor)
+    (defun divides? (a b)
+      (= (mod b a) 0))
+    (cond ((> (square test-divisor) n) n)
+          ((divides? test-divisor n) test-divisor)
+          (t (find-divisor n (1+ test-divisor)))))
+  (find-divisor n 2))
+
+(smallest-divisor 199)
+;; => 199
+(smallest-divisor 1999)
+;; => 1999
+(smallest-divisor 19999)
+;; => 7
+
+;; Exercise 1.22
+(defun correct-prime? (n)
+  "Conclusively check whether N is prime (in log N time)."
+  (= n (smallest-divisor n)))
+
+(defun timed-prime-test (n)
+  (message "%d" n)
+  (start-prime-test n (float-time)))
+
+(defun start-prime-test (n start-time)
+  (if (correct-prime? n)
+      (report-prime (- (float-time) start-time))))
+
+(defun report-prime (elapsed-time)
+  (message " *** ")
+  (message "%f" elapsed-time))
+
+(timed-prime-test 89)
+
+(defun expmod (base ex m)
+  (cond ((= ex 0) 1)
+        ((even? ex) (mod (square (expmod base (/ ex 2) m)) m))
+        (t (mod (* base (expmod base (1- ex) m)) m))))
+
+(defun fermat-test (n)
+  (defun try (a)
+    (= (expmod a n n) a))
+  (try (1+ (random (1- n)))))
+
+(defun fast-prime? (n times)
+  (cond ((= times 0) t)
+        ((fermat-test n) (fast-prime? n (1- times)))
+        (t nil)))
+
 (provide '12)
 ;;; 12.el ends here
