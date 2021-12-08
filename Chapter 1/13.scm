@@ -114,3 +114,83 @@
 
 (filter-accum odd? + 0 identity 1 1+ 10)
 ;; => 25
+
+;; Exercise 1.35
+(define tolerance 0.00001)
+(define (fixed-point f first-guess)
+  (define (close-enough? v1 v2)
+    (< (abs (- v1 v2))
+       tolerance))
+  (define (try guess)
+    (let ((next (f guess)))
+      (if (close-enough? guess next)
+          next
+          (try next))))
+  (try first-guess))
+
+(fixed-point cos 1.0)
+;; => 0.7390822985224024
+
+(fixed-point (lambda (x) (+ 1 (/ 1 x))) 1.0) ; golden ratio
+;; => 1.6180327868852458
+(define phi (fixed-point (lambda (x) (+ 1 (/ 1 x))) 1.0))
+
+;; Exercise 1.36
+(define (fixed-point f first-guess)
+  (define (close-enough? v1 v2)
+    (< (abs (- v1 v2))
+       tolerance))
+  (define (try guess)
+    (display guess)
+    (newline)
+    (let ((next (f guess)))
+      (if (close-enough? guess next)
+          next
+          (try next))))
+  (try first-guess))
+
+(fixed-point (lambda (x) (/ (log 1000) (log x))) 2.0)
+;; without average damping: takes 34 steps (with a precision of 1e-5)
+(fixed-point (lambda (x) (/ (+ (log 1000) (* x (log x))) (* 2 (log x)))) 2.0)
+;; with average damping: takes 9 steps
+
+;; Exercise 1.37
+;; Tricky -- quite a bit of discussion on schemewiki
+(define (cont-frac n d k)
+  (define (helper i)
+    (if (> i k) 0
+        (/ (n i) (+ (d i) (helper (1+ i))))))
+  (helper 1))
+
+(define (cont-frac-iter n d k)
+  (define (iter acc i)
+    (if (= i 0) acc
+        (iter (/ (n i) (+ (d i) acc)) (1- i))))
+  (iter 0 k))
+
+;; Approximate 1/phi
+(cont-frac (lambda (i) 1.0)
+           (lambda (i) 1.0)
+           12)                          ; need k = 12
+(cont-frac-iter (lambda (i) 1.0)
+                (lambda (i) 1.0)
+                12)
+
+;; Exercise 1.38
+;; Approximate e-2
+(cont-frac (lambda (i) 1.0)
+           (lambda (i)
+             (if (= (remainder (1+ i) 3) 0)
+                 (/ (* (1+ i) 2) 3)
+                 1.0))
+           50)
+
+;; Exercise 1.39
+(define (tan-cf x k)
+  (define (n i)
+    (let ((x2 (expt x 2)))
+      (if (= i 1) x
+          (- x2))))
+  (define (d i)
+    (1- (* 2.0 i)))
+  (cont-frac n d k))
