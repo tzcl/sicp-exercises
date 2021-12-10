@@ -11,6 +11,7 @@
   (* (sum f (+ a (/ dx 2.0)) add-dx b)
      dx))
 
+
 (define (simpsons-rule f a b n)
   (define h (/ (- b a) n))
   (define (yk k) (f (+ a (* k h))))
@@ -22,6 +23,8 @@
      (sum term 0 1+ n)))
 ;; Got confused with a and b (the a and b in simpsons-rule are fixed whereas the
 ;; a and b in sum range from 0 to n)
+
+(define (cube x) (* x x x))
 
 (integral cube 0 1 0.01)
 ;; => 0.24998750000000042
@@ -194,3 +197,87 @@
   (define (d i)
     (1- (* 2.0 i)))
   (cont-frac n d k))
+
+;; Exercise 1.40
+(define (deriv g)
+  (lambda (x) (/ (- (g (+ x dx)) (g x)) dx)))
+(define dx 0.00001)
+
+(define (newton-transform g)
+  (lambda (x) (- x (/ (g x) ((deriv g) x)))))
+(define (newtons-method g guess)
+  (fixed-point (newton-transform g) guess))
+
+(define (cubic a b c)
+  (lambda (x) (+ (expt x 3)
+                 (* a (expt x 2))
+                 (* b x)
+                 c)))
+
+;; Exercise 1.41
+(define (twice f)
+  (lambda (x) (f (f x))))
+
+(((twice (twice twice)) 1+) 5)
+;; => 21
+
+;; Exercise 1.42
+(define (compose f g)
+  (lambda (x) (f (g x))))
+
+;; Exercise 1.43
+(define (repeat f n)
+  (if (= n 1) (lambda (x) (f x))
+      (compose f (repeat f (1- n)))))
+
+;; Repeating inc 5 times should be the same as x + 5
+((repeat 1+ 5) 5)
+;; => 10
+
+;; Exercise 1.44
+(define (smooth f)
+  (lambda (x) (/ (+ (f (- x dx))
+                    (f x)
+                    (f (+ x dx)))
+                 3)))
+
+;; We can get the n-fold smoothed function using
+;; ((repeat smooth n) f)
+
+;; Exercise 1.45
+(define (average-damp f)
+  (lambda (x) (/ (+ x (f x)) 2.0)))
+
+;; Trying to find the 4th root doesn't work with one average-dampen
+;; Instead, we need to repeat log2(n) times
+(define (nth-root n x)
+  (define (reps n)                      ; could instead use (floor (log2 n))
+    (define (iter acc)
+      (if (< (- n (* 2 acc)) 0) acc
+          (iter (* 2 acc))))
+    (iter 1))
+  (fixed-point ((repeat average-damp (reps n)) (lambda (y) (/ x (expt y (1- n))))) 1.0))
+
+;; Exercise 1.46
+;; We can generalise some of the numerical methods we've seen as
+;; iterative improvement.
+(define (iterative-improve good-enough? improve)
+  (define (iter guess)
+    (if (good-enough? guess) guess
+        (iter (improve guess))))
+  iter)
+
+(define (sqrt x)
+  ((iterative-improve
+    (lambda (y)
+      (< (abs (- (expt y 2) x)) tolerance))
+    (average-damp
+     (lambda (y) (/ x y))))
+   1.0))
+
+(define (fixed-point f)
+  ((iterative-improve
+    (lambda (y)
+      (< (abs (- y (f y))) tolerance))
+    (lambda (y)
+      (f y))) 2.0))
