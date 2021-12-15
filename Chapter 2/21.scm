@@ -31,7 +31,7 @@
 (define (gcd a b)
   (if (= b 0) a
       (gcd b (remainder a b))))
-  
+
 (define (make-rat n d)
   (let ((g (gcd n d)))
     (cons (/ n g) (/ d g))))
@@ -96,3 +96,56 @@
   (count-divisions z 2))
 (define (cdr z)
   (count-divisions z 3))
+
+;; Exercise 2.6
+;;
+;; We can represent nonnegative integers using functions
+;; (this is known as Church numerals)
+(define zero (lambda (f) (lambda (x) x)))
+(define (add-1 n)
+  (lambda (f) (lambda (x) (f ((n f) x)))))
+
+;; (define one (add-1 zero))
+;; (add-1 zero)
+;; (lambda (f) (lambda (x) (f ((zero f) x))))
+;; (lambda (f) (lambda (x) (f (((lambda (f) (lambda (x) x)) f) x))))
+;; (lambda (f) (lambda (x) (f ((lambda (x) x) x))))
+;; (lambda (f) (lambda (x) (f x)))
+;;
+;; Likewise
+;; (define two (add-1 one))
+;; (add-1 one)
+;; ...
+;; (lambda (f) (lambda (x) (f (f x))))
+
+(define (add a b)
+  (lambda (f)
+    (lambda (x)
+      ((a f) ((b f) x)))))
+
+(define (print-cn n)
+  (display ((n 1+) 0)) (newline))
+
+;; Implementing interval arithmetic
+(define (add-interval x y)
+  (make-interval (+ (lower-bound x) (lower-bound y))
+                 (+ (upper-bound x) (upper-bound y))))
+(define (mul-interval x y)
+  (let ((p1 (* (lower-bound x) (lower-bound y)))
+        (p2 (* (lower-bound x) (upper-bound y)))
+        (p3 (* (upper-bound x) (lower-bound y)))
+        (p4 (* (upper-bound x) (upper-bound y))))
+    (make-interval (min p1 p2 p3 p4)
+                   (max p1 p2 p3 p4))))
+(define (div-interval x y)
+  (mul-interval
+   x
+   (make-interval (/ 1.0 (upper-bound y))
+                  (/ 1.0 (lower-bound y)))))
+
+;; Exercise 2.7
+(define (make-interval a b) (cons a b))
+(define (lower-bound x) (car i))
+(define (upper-bound x) (cdr i))
+
+;; Exercise 2.8
