@@ -76,11 +76,11 @@
                 (average (y-point start) (y-point end)))))
 
 ;; Exercise 2.4
-(define (cons x y)
+(define (cons-proc x y)
   (lambda (m) (m x y)))
-(define (car z)
+(define (car-proc z)
   (z (lambda (p q) p)))
-(define (cdr z)
+(define (cdr-proc z)
   (z (lambda (p q) q)))
 
 ;; Exercise 2.5
