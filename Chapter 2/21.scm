@@ -145,7 +145,21 @@
 
 ;; Exercise 2.7
 (define (make-interval a b) (cons a b))
-(define (lower-bound x) (car i))
-(define (upper-bound x) (cdr i))
+(define (lower-bound x) (car x))
+(define (upper-bound x) (cdr x))
 
 ;; Exercise 2.8
+(define (sub-interval x y)
+  (make-interval (- (lower-bound x) (upper-bound y))
+                 (- (upper-bound x) (lower-bound y))))
+
+;; Exercise 2.10
+(define (div-interval x y)
+  (cond
+   ((= 0 (lower-bound y)) (error "Lower bound of y is 0!"))
+   ((= 0 (upper-bound y)) (error "Upper bound of y is 0!"))
+   (else (mul-interval x
+                       (make-interval (/ 1.0 (lower-bound y))
+                                      (/ 1.0 (upper-bound y)))))))
+
+;; Exercise 2.11
