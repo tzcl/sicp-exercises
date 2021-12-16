@@ -84,7 +84,7 @@
   (z (lambda (p q) q)))
 
 ;; Exercise 2.5
-(define (cons x y)
+(define (cons-ints x y)
   (* (expt 2 x) (expt 3 y)))
 
 (define (count-divisions n x)
@@ -92,9 +92,9 @@
       (1+ (count-divisions (/ n x) x))
       0))
 
-(define (car z)
+(define (car-ints z)
   (count-divisions z 2))
-(define (cdr z)
+(define (cdr-ints z)
   (count-divisions z 3))
 
 ;; Exercise 2.6
