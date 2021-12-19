@@ -162,4 +162,80 @@
                        (make-interval (/ 1.0 (lower-bound y))
                                       (/ 1.0 (upper-bound y)))))))
 
-;; Exercise 2.11
+;; Alternate implementation using center + widths
+(define (make-center-width c w)
+  (make-interval (- c w) (+ c w)))
+(define (center i)
+  (/ (+ (lower-bound i) (upper-bound i)) 2))
+(define (width i)
+  (/ (- (upper-bound i) (lower-bound i)) 2))
+
+;; Exercise 2.12
+(define (make-center-percent c p)
+  (let ((w (/ (* c p) 2)))
+    (make-interval (- c w) (+ c w))))
+(define (center i)
+  (/ (+ (lower-bound i) (upper-bound i)) 2))
+(define (percent i)
+  (if (= (center i) 0) 0
+      (/ (- (upper-bound i) (lower-bound i)) (center i))))
+
+;; Exercise 2.13
+(define (mul-percent-interval x y)
+  (let ((c1 (center x))
+        (p1 (percent x))
+        (c2 (center y))
+        (p2 (percent y)))
+    (make-center-percent (* c1 c2) (+ p1 p2))))
+;; p1*p2 is negligible for small percentages
+
+;; Issues with computing intervals
+(define (par1 r1 r2)
+  (div-interval (mul-interval r1 r2)
+                (add-interval r1 r2)))
+
+(define (par2 r1 r2)
+  (let ((one (make-interval 1 1)))
+    (div-interval
+     one (add-interval (div-interval one r1)
+                       (div-interval one r2)))))
+
+;; Exercise 2.14
+(define interval-A (make-center-percent 10 0.01))
+(define interval-B (make-center-percent 10 0.01))
+
+(define A/A (div-interval interval-A interval-A))
+(center A/A)
+;; => 1.000050001250031
+(percent A/A)
+;; => 0.01999950001249991
+
+(define A/B (div-interval interval-A interval-B))
+(center A/B)
+;; => 1.000050001250031
+(percent A/B)
+;; => 0.01999950001249991
+
+;; Lem is right because interval arithmetic does not function the same as normal
+;; arithmetic. Specifically, division does not work as expected since there is
+;; no identity interval (see A/A != 1). Therefore, where we expect an interval
+;; to be 1, we increase uncertainty.
+
+;; Exercise 2.15
+;;
+;; Program 2 is better because the interval (1 1) has no uncertainty (dividing
+;; this by itself gives 1 as expected). It avoids the additional uncertainty
+;; program 1 incurs.
+
+;; Exercise 2.16
+;;
+;; This is very difficult, especially once we have intervals that consist of
+;; multiple variables. The core issue is that interval arithmetic is not a
+;; field. One workaround is to use numerical methods such as MC to compute
+;; intervals.
+;;
+;; See
+;;   https://stackoverflow.com/questions/14130878/sicp-2-16-interval-arithmetic-scheme/14131196#14131196
+;;   http://wiki.drewhess.com/wiki/SICP_exercise_2.16
+;;
+;; In general, designing an interval arithmetic system is very difficult.
