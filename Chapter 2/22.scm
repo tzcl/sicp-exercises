@@ -330,3 +330,51 @@
   (if (null? s) (list #nil)
       (let ((rest (subsets (cdr s))))
         (append rest (map (lambda (x) (cons (car s) x)) rest)))))
+
+;; Sequence operations
+(define (toby/filter pred seq)
+  (cond ((null? seq) #nil)
+        ((pred (car seq))
+         (cons (car seq)
+               (toby/filter pred (cdr seq))))
+        (else (toby/filter pred (cdr seq)))))
+
+(define (toby/accumulate op acc seq)
+  (if (null? seq) acc
+      (op (car seq)
+          (toby/accumulate op acc (cdr seq)))))
+
+;; Exercise 2.33
+;; We can define basic list operations in terms of accumulate
+(define (toby/map proc seq)
+  (toby/accumulate
+   (lambda (x y)
+     (cons (proc x) y))
+   #nil
+   seq))
+(define (toby/append seq1 seq2)
+  (toby/accumulate cons seq2 seq1))
+(define (toby/length seq)
+  (toby/accumulate (lambda (_ y) (+ 1 y)) 0 seq))
+
+;; Exercise 2.34
+;; Assume coefficients are a_0, ..., a_n
+(define (horner-eval x coeffs)
+  (toby/accumulate (lambda (coeff rest) (+ coeff (* rest x))) 0 coeffs))
+
+;; Exercise 2.35
+(define (count-leaves tree)
+  (toby/accumulate + 0 (map (lambda (x)
+                              (if (pair? x) (count-leaves x) 1))
+                            tree)))
+
+;; Exercise 2.36
+;; accumulate for matrices (2D sequences)
+(define (accumulate-n op init seqs)
+  (if (null? (car seqs)) #nil
+      (cons (toby/accumulate op init (map car seqs))
+            (accumulate-n op init (map cdr seqs)))))
+
+(define s (list (list 1 2 3) (list 4 5 6) (list 7 8 9) (list 10 11 12)))
+(accumulate-n + 0 s)
+;; => (22 26 30)
