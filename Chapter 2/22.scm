@@ -339,42 +339,164 @@
                (toby/filter pred (cdr seq))))
         (else (toby/filter pred (cdr seq)))))
 
-(define (toby/accumulate op acc seq)
-  (if (null? seq) acc
+(define (accumulate op init seq)
+  (if (null? seq) init
       (op (car seq)
-          (toby/accumulate op acc (cdr seq)))))
+          (accumulate op init (cdr seq)))))
 
 ;; Exercise 2.33
 ;; We can define basic list operations in terms of accumulate
 (define (toby/map proc seq)
-  (toby/accumulate
+  (accumulate
    (lambda (x y)
      (cons (proc x) y))
    #nil
    seq))
 (define (toby/append seq1 seq2)
-  (toby/accumulate cons seq2 seq1))
+  (accumulate cons seq2 seq1))
 (define (toby/length seq)
-  (toby/accumulate (lambda (_ y) (+ 1 y)) 0 seq))
+  (accumulate (lambda (_ y) (+ 1 y)) 0 seq))
 
 ;; Exercise 2.34
 ;; Assume coefficients are a_0, ..., a_n
 (define (horner-eval x coeffs)
-  (toby/accumulate (lambda (coeff rest) (+ coeff (* rest x))) 0 coeffs))
+  (accumulate (lambda (coeff rest) (+ coeff (* rest x))) 0 coeffs))
 
 ;; Exercise 2.35
 (define (count-leaves tree)
-  (toby/accumulate + 0 (map (lambda (x)
-                              (if (pair? x) (count-leaves x) 1))
-                            tree)))
-
+  (accumulate + 0 (map
+                   (lambda (x)
+                     (cond ((null? x) 0)
+                           ((pair? x) (count-leaves x))
+                           (else 1)))
+                   tree)))
 ;; Exercise 2.36
-;; accumulate for matrices (2D sequences)
 (define (accumulate-n op init seqs)
   (if (null? (car seqs)) #nil
-      (cons (toby/accumulate op init (map car seqs))
+      (cons (accumulate op init (map car seqs))
             (accumulate-n op init (map cdr seqs)))))
 
 (define s (list (list 1 2 3) (list 4 5 6) (list 7 8 9) (list 10 11 12)))
 (accumulate-n + 0 s)
 ;; => (22 26 30)
+
+;; Exercise 2.37
+(define (dot-product v w)
+  (accumulate + 0 (map * v w)))
+
+(define (matrix-*-vector m v)
+  (map (lambda (row) (dot-product row v)) m))
+
+(define (transpose m)
+  (accumulate-n cons #nil m))
+
+(define (matrix-*-matrix m n)
+  (let ((cols (transpose n)))
+    (map (lambda (r) (matrix-*-vector cols r)) m)))
+
+(define I (list (list 1 0 0) (list 0 1 0) (list 0 0 1)))
+(define A (list (list 1 2 3) (list 4 5 6) (list 7 8 9)))
+(matrix-*-matrix A I)
+;; => ((1 2 3) (4 5 6) (7 8 9))
+
+;; Exercise 2.38
+(define fold-right accumulate)
+(define (fold-left op init seq)
+  (define (iter ans rest)
+    (if (null? rest) ans
+        (iter (op ans (car rest))
+              (cdr rest))))
+  (iter init seq))
+
+(fold-right / 1 (list 1 2 3))           ; nest right
+;; => 3/2
+(fold-left  / 1 (list 1 2 3))           ; nest left
+;; => 1/6
+(fold-right list #nil (list 1 2 3))
+;; => (1 (2 (3 #nil)))
+(fold-left  list #nil (list 1 2 3))
+;; => (((#nil 1) 2) 3)
+
+(define (flip-cons rest first)
+  (cons first rest))
+
+(fold-right cons #nil '(1 2 3))         ; identity fn
+(fold-left flip-cons #nil '(1 2 3))     ; reverse
+
+;; The only difference between fold-left and fold-right is the nesting of
+;; brackets. Thus, given an associative operation, fold-left and fold-right will
+;; produce the same result.
+
+;; Exercise 2.39
+(define (reverse-left seq)
+  (fold-left (lambda (x y) (cons y x)) #nil seq))
+(define (reverse-right seq)
+  (fold-right (lambda (x y) (append y (list x))) #nil seq))
+
+;; Nested mapping
+(define (flatmap proc seq)
+  (accumulate append #nil (map proc seq)))
+
+;; Exercise 2.40
+(load "../library.scm")
+
+(define (unique-pairs n)
+  ;; Generates (i,j,k) where 1 <= j < i <= n
+  (flatmap (lambda (i)
+             (map (lambda (j) (list j i))
+                  (range 1 (1- i))))
+           (range 2 n)))
+
+(define (prime-sum? pair)
+  ;; Here a pair means (list x y) instead of a Lisp pair
+  (prime? (+ (car pair) (cadr pair))))
+
+(define (make-pair-sum pair)
+  (list (car pair) (cadr pair) (+ (car pair) (cadr pair))))
+
+(define (prime-sum-pairs n)
+  (map make-pair-sum (filter prime-sum? (unique-pairs n))))
+
+;; Exercise 2.41
+(define (unique-triples n)
+  ;; Generates (i,j,k) where 1 <= k < j < i <= n
+  (flatmap
+   (lambda (i)
+     (flatmap (lambda (j)
+                (map (lambda (k)
+                       (list k j i))
+                     (range 1 (1- j))))
+          (range 2 (1- i))))
+   (range 3 n)))
+
+(define (ordered-triple-sum n s)
+  (filter (lambda (t) (= (sum t) s)) (unique-triples n)))
+
+(define (fast-three-sum n s)            ; O(n^2)
+  (define (valid? triple)
+    (let ((i (car triple))
+          (j (cadr triple))
+          (k (caddr triple)))
+      (< 0 i j k)))
+  (define triples
+    (flatmap
+     (lambda (i) (map (lambda (j) (list (- s j i) j i)) (range 2 (1- i))))
+     (range 3 n)))
+  (filter valid? triples))
+
+;; Exercise 2.42
+;; Eight-queens problem
+(define (queens board-size)
+  (define (queen-cols k)
+    (if (= k 0) (list empty-board)
+        (filter
+         (lambda (positions) (safe? k positions))
+         (flatmap
+          (lambda (rest)
+            (map (lambda (new-row)
+                   (adjoin-position new-row k rest))
+                 (range 1 board-size)))
+          (queen-cols (1- k))))))
+  (queen-cols board-size))
+
+(define empty-board #nil)
