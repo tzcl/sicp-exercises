@@ -487,6 +487,19 @@
 ;; Exercise 2.42
 ;; Eight-queens problem
 (define (queens board-size)
+  (define empty-board #nil)
+
+  (define (safe? k seq)
+    (accumulate
+     (lambda (x y)
+       (and (cond ((= x ()))) y))
+     #t
+     seq))
+
+  (define (adjoin-position new-row k rest)
+    (if (null? rest) (cons new-row rest)
+        (map (lambda (pos) (cons new-row pos)) rest)))
+
   (define (queen-cols k)
     (if (= k 0) (list empty-board)
         (filter
@@ -498,5 +511,3 @@
                  (range 1 board-size)))
           (queen-cols (1- k))))))
   (queen-cols board-size))
-
-(define empty-board #nil)
