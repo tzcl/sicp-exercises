@@ -518,10 +518,13 @@
   (queen-cols board-size))
 
 ;; Exercise 2.43
-;; Assume the original program runs in T time.
 ;;
-;; The original queen-cols is a linear recursive process since each call calls
-;; itself again. However, Louis's program is a tree recursive process since each
-;; call to queen-cols will call itself again board-size times.
+;; The most time-consuming part of the queens program is queens-col. For the
+;; original program, it's called N+1 times (although (queens-col 0) returns
+;; instantly). In Louis's program, he's wrapped the call to queen-cols in a loop
+;; so each call results in N further calls to queen-cols.
 ;;
-;; Thus, Louis's program will take roughly T^board-size time to run.
+;; The recursion in Louis's program will result in a tree N nodes deep where
+;; each node has N children. Thus, the number of nodes in the tree will be
+;; O(N^N). The difference between that and the original program is O(N^N) / N+1
+;; = O(N^N) so Louis's program will be roughly O(N^N) times slower.
