@@ -485,29 +485,43 @@
   (filter valid? triples))
 
 ;; Exercise 2.42
-;; Eight-queens problem
+;; n-queens problem
 (define (queens board-size)
   (define empty-board #nil)
 
-  (define (safe? k seq)
-    (accumulate
-     (lambda (x y)
-       (and (cond ((= x ()))) y))
-     #t
-     seq))
+  (define (attacked? k seq)
+    (let ((new-queen (caar seq))
+          (queens (cdr seq)))
+      (accumulate
+       (lambda (queen rest)
+         (or (= new-queen (car queen))
+             (= new-queen (+ (car queen) (- (cadr queen) k)))
+             (= new-queen (- (car queen) (- (cadr queen) k)))
+             rest))
+       #f
+       queens)))
 
-  (define (adjoin-position new-row k rest)
-    (if (null? rest) (cons new-row rest)
-        (map (lambda (pos) (cons new-row pos)) rest)))
+  (define (adjoin-position new-queen k queens)
+    ;; Add possibilities to kth col
+    (cons (list new-queen k) queens))
 
   (define (queen-cols k)
     (if (= k 0) (list empty-board)
         (filter
-         (lambda (positions) (safe? k positions))
+         (lambda (positions) (not (attacked? k positions)))
          (flatmap
-          (lambda (rest)
-            (map (lambda (new-row)
-                   (adjoin-position new-row k rest))
+          (lambda (queens)
+            (map (lambda (new-queen)
+                   (adjoin-position new-queen k queens))
                  (range 1 board-size)))
           (queen-cols (1- k))))))
   (queen-cols board-size))
+
+;; Exercise 2.43
+;; Assume the original program runs in T time.
+;;
+;; The original queen-cols is a linear recursive process since each call calls
+;; itself again. However, Louis's program is a tree recursive process since each
+;; call to queen-cols will call itself again board-size times.
+;;
+;; Thus, Louis's program will take roughly T^board-size time to run.
