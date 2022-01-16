@@ -528,3 +528,39 @@
 ;; each node has N children. Thus, the number of nodes in the tree will be
 ;; O(N^N). The difference between that and the original program is O(N^N) / N+1
 ;; = O(N^N) so Louis's program will be roughly O(N^N) times slower.
+
+;; Skipped the picture language
+
+;; Symbolic data
+(define (toby/memq item xs)
+  ;; Returns false if the symbol is not contained in the list, otherwise returns
+  ;; the sublist beginning with the first appearance of the symbol
+  (cond ((null? xs) #f)
+        ((eq? item (car xs)) xs)
+        (else (toby/memq item (cdr xs)))))
+
+;; Exercise 2.53
+;; (list 'a 'b 'c)                         => (a b c)
+;; (list (list 'george))                   => ((george))
+;; (cdr '((x1 x2) (y1 y2)))                => ((y1 y2))
+;; (cadr '((x1 x2) (y1 y2)))               => (y1 y2)
+;; (pair? (car '(a short list)))           => #f
+;; (memq 'red '((red shoes) (blue socks))) => #f
+;; (memq 'red '(red shoes blue socks))     => (red shoes blue socks)
+
+;; Exercise 2.54
+(define (toby/equal? a b)
+  (cond ((and (null? a) (null? b)) #t)
+        ((and (not (pair? a)) (not (pair? b))) (eq? a b))
+        ((and (list? a) (list? b))
+         (and (toby/equal? (car a) (car b))
+              (toby/equal? (cdr a) (cdr b))))
+        (else #f)))
+
+;; Exercise 2.55
+;; This happens because ' is just a shorthand for (quote ...) (footnote 34)
+;;
+;; (car ''abracadabra)
+;; (car '(quote abracadabra)
+;; (car (quote (quote abracadabra)))
+;; quote
