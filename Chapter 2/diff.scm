@@ -89,12 +89,75 @@
         ((=number? e1 1) e2)
         ((=number? e2 1) e1)
         ((and (number? e1) (number? e2)) (* e1 e2))
-        ((sum? e2))
         (else (list e1 '* e2))))
 (define (product? p) (and (pair? p) (eq? (cadr p) '*)))
 (define (multiplier p) (car p))
 (define (multiplicand p) (caddr p))
 
+(define (make-exponent base ex)
+  (cond ((=number? ex 0) 1)
+        ((=number? base 1) 1)
+        ((=number? ex 1) base)
+        ((and (number? base) (number? ex)) (expt base ex))
+        (else (list base '** ex))))
+(define (exponent? x) (and (pair? x) (eq? (cadr x) '**)))
+(define (base e) (car e))
+(define (exponent e) (caddr e))
+
 ;; Part B
+;; Infix notation and operator precedence
 ;; See http://community.schemewiki.org/?sicp-ex-2.58
 ;; https://github.com/danielpi/SICP-Exercises/blob/master/Racket/Ex%202.58b%20Infix%20Hard.rkt
+
+;; memq returns sublist containing sym if it matches sym (otherwise #f)
+(define (memp-append sym lst)
+  (define (iter lst res)
+    (cond ((null? lst) #f)
+          ((eq? (car lst) sym) res)
+          (else (iter (cdr lst) (append res (list (car lst)))))))
+  (iter lst '()))
+
+(define (memp sym lst)
+  (define (iter lst res)
+    (cond ((null? lst) #f)
+          ((eq? (car lst) sym) (res '()))
+          (else (iter (cdr lst)
+                      (lambda (x) (res (cons (car lst) x)))))))
+  (iter lst (lambda (x) x)))
+
+(define (get-exp exp) (if (null? (cdr exp)) (car exp) exp))
+(define (split-right sym exp) (get-exp (cdr (memq sym exp))))
+(define (split-left sym exp) (get-exp (memp sym exp)))
+
+(define (make-sum e1 e2)
+  (cond ((=number? e1 0) e2)
+        ((=number? e2 0) e1)
+        ((and (number? e1) (number? e2)) (+ e1 e2))
+        (else (list e1 '+ e2))))
+(define (sum? s) (if (memq '+ s) #t #f))
+(define (addend s) (split-left '+ s))
+(define (augend s) (split-right '+ s))
+
+(define (make-product e1 e2)
+  (cond ((or (=number? e1 0) (=number? e2 0)) 0)
+        ((=number? e1 1) e2)
+        ((=number? e2 1) e1)
+        ((and (number? e1) (number? e2)) (* e1 e2))
+        (else (list e1 '* e2))))
+(define (product? p) (if (memq '* p) #t #f))
+(define (multiplier p) (split-left '* p))
+(define (multiplicand p) (split-right '* p))
+
+(define (make-exponent base ex)
+  (cond ((=number? ex 0) 1)
+        ((=number? base 1) 1)
+        ((=number? ex 1) base)
+        ((and (number? base) (number? ex)) (expt base ex))
+        (else (list base '** ex))))
+(define (exponent? x) (if (memq '** x) #t #f))
+(define (base e) (split-left '** e))
+(define (exponent e) (split-right '** e))
+
+;; This is inefficient since it needs to traverse the expression multiple times.
+;; A better solution would be to implement some kind of recursive-descent parser
+;; but I think that's overkill for this exercise.
