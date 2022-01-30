@@ -101,3 +101,88 @@
          (make-tree (entry set) (set/adjoin x (left set)) (right set)))
         ((> x (entry set))
          (make-tree (entry set) (left set) (set/adjoin x (right set))))))
+
+;; Exercise 2.63
+(define (tree->list-1 tree)
+  (if (null? tree) '()
+      (append (tree->list-1 (left tree))
+              (cons (entry tree)
+                    (tree->list-1 (right tree))))))
+
+(define (tree->list-2 tree)
+  (define (copy-to-list tree res)
+    (if (null? tree) res
+        (copy-to-list (left tree)
+                      (cons (entry tree)
+                            (copy-to-list (right tree) res)))))
+  (copy-to-list tree '()))
+
+;; Both procedures are in-order traversals so they give the same result.
+;; Recurrences for each procedure are given by
+;;   tree->list-1: T(n) = 2*T(n/2) + O(n/2)  => O(n log n)
+;;   tree->list-2: T(n) = 2*T(n/2) + O(1)    => O(n)
+;; using the Master Theorem
+
+;; Exercise 2.64
+(define (list->tree lst)
+  (car (partial-tree lst (length lst))))
+
+(define (partial-tree lst n)
+  (if (= n 0) (cons '() lst)
+      (let ((left-size (quotient (1- n) 2)))
+        (let ((left-result (partial-tree lst left-size)))
+          (let ((left-tree (car left-result))
+                (rest (cdr left-result))
+                (right-size (- n (1+ left-size))))
+            (let ((this-entry (car rest))
+                  (right-result (partial-tree (cdr rest) right-size)))
+              (let ((right-tree (car right-result))
+                    (remaining (cdr right-result)))
+                (cons (make-tree this-entry
+                                 left-tree
+                                 right-tree)
+                      remaining))))))))
+
+;; (list->tree '(1 3 5 7 9 11)) produces:
+;;                      5
+;;                    /   \
+;;                   /     \
+;;                  1       9
+;;                   \     /  \
+;;                    3   7    11
+;;
+;; Given an ordered list, partial tree works by taking the left half of
+;; the list (quotient is important because it returns an integer) and
+;; turning that into a tree before adding the current entry and the
+;; right half of the tree.
+;;
+;; T(n) = 2*T(n/2) + O(1) therefore O(n)
+;; (intuitively the procedure only traverses each node once)
+
+;; Exercise 2.65
+(define (tree-set/union set1 set2)
+  (let* ((list1 (tree->list-2 set1))
+         (list2 (tree->list-2 set2))
+         (union (set/union list1 list2)))
+    (list->tree union)))
+
+(define (set/intersect set1 set2)
+  (let* ((list1 (tree->list-2 set1))
+         (list2 (tree->list-2 set2))
+         (intersect (set/intersect list1 list2)))
+    (list->tree intersect)))
+
+;; Exercise 2.66
+;; Assume sets are represented as binary trees ordered by the numerical
+;; values of the keys
+;; Assume that the entry of a set is a key-value pair
+(define (make-record key value)
+  (list key value))
+(define (key record) (car record))
+(define (value record) (cadr record))
+
+(define (lookup given-key set)
+  (cond ((null? set) #f)
+        ((= given-key (key (entry set))) (value (entry set)))
+        ((< given-key (key (entry set))) (lookup given-key (left set)))
+        ((> given-key (key (entry set))) (lookup given-key (right set)))))
