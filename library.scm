@@ -17,6 +17,16 @@
   (if (< end start) #nil
       (cons start (range (1+ start) end))))
 
+(define (andmap pred seq)
+  (cond ((null? seq) #t)
+        ((pred (car seq)) (andmap pred (cdr seq)))
+        (else #f)))
+
+(define (ormap pred seq)
+  (cond ((null? seq) #f)
+        ((pred (car seq)) #t)
+        (else (ormap pred (cdr seq)))))
+
 (define (accumulate op init seq)
   (if (null? seq) init
       (op (car seq)

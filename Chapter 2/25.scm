@@ -99,6 +99,9 @@
 ;; included in the call.
 ;;
 ;; A better strategy would be to try find some "shared ancestor" type.
+(define (apply-generic op . args)
+  (define (no-method type-tags)
+    (error "No method for these types" (list op type-tags))))
 
 ;; Exercise 2.83
 (define (raise x) (apply-generic 'raise x))
@@ -108,3 +111,5 @@
 ;; real->complex: (make-from-real-imag x 0)
 
 ;; Exercise 2.84
+;; TODO: come back and finish this section off and build the symbolic
+;; algebra example
